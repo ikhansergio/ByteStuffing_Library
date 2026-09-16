@@ -1,1 +1,1 @@
-# Byte-Stuffing-Library
+# ByteStuffing_Library
