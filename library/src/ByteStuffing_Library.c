@@ -38,7 +38,7 @@ bit 7   . ErrorDetectedFlag	- If the flag is set, the data is invalid and synchr
 bit 4-3 . No information.
 bit 2   . SkipByteFlag 		- This is a service byte, it must be skipped.
 bit 1   . StartOfFrameFlag  - This byte is the first in the frame.
-bit 1   . FrameRxDoneFlag   - This flag indicates that frame reception is complete.
+bit 0   . FrameRxDoneFlag   - This flag indicates that frame reception is complete.
 */
 
 unsigned char ByteStuffingDecoder(unsigned char *DataIn, unsigned char *DataOut)
