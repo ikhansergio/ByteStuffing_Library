@@ -26,7 +26,26 @@
 #include "ByteStuffing_Library.h"
 
 /*
-unsigned char ByteStuffingDecoder(unsigned char *DataIn, unsigned char *DataOut)
+void ByteStuffingResetFSM(ByteStuff_FSM_Str *p)
+This function must be called once before using the library.
+
+#define UARTs_Count        4
+
+ByteStuff_FSM_Str ByteStuff_FSM[UARTs_Count];
+
+for (int i=0; i<UARTs_Count; i++) ByteStuffingResetFSM(&ByteStuff_FSM[i]);
+
+*/
+
+void ByteStuffingResetFSM(ByteStuff_FSM_Str *p)
+{
+    p->RxSize=0;
+    p->ErrorDetectedFlag=0;
+    p->PreviousDataByte=0;
+};
+
+/*
+unsigned char ByteStuffingDecoder(unsigned char *DataIn, unsigned char *DataOut, ByteStuff_FSM_Str *p)
 
 This function analyzes the data stream received from the UART to identify frame boundaries using the byte-stuffing algorithm.
 The function argument is the character received via UART.
@@ -66,14 +85,20 @@ Examples :
 0x7E DATA 0x7D 0x7D DATA 0x7E 	-> 0x7D 0x7D - Error sequence
 0x7E 0x7D 0x7D DATA DATA 0x7E 	-> 0x7D 0x7D - Error sequence
 
+
+// ByteStuffing decoder FSM is made external variable, for using library with many UART devices
+#define UARTs_Count        4
+
+ByteStuff_FSM_Str ByteStuff_FSM[UARTs_Count];
+
+unsigned char RetValue = ByteStuffingDecoder(DataIn, DataOut, &ByteStuff_FSM[0]);
 */
 
-unsigned char ByteStuffingDecoder(unsigned char *DataIn, unsigned char *DataOut)
+unsigned char ByteStuffingDecoder(unsigned char *DataIn, unsigned char *DataOut, ByteStuff_FSM_Str *p)
 {
-
-static unsigned short	RxSize 				=0;
-static unsigned char 	ErrorDetectedFlag 	=0;
-static unsigned char 	PreviousDataByte   	=0;
+unsigned short	RxSize 				=p->RxSize;
+unsigned char 	ErrorDetectedFlag 	=p->ErrorDetectedFlag;
+unsigned char 	PreviousDataByte   	=p->PreviousDataByte;
 
 unsigned char SkipByteFlag 		=0;
 unsigned char StartOfFrameFlag 	=0;
@@ -117,12 +142,16 @@ PreviousDataByte = *DataIn;
 
 unsigned int RetValue =0;
 
-if (ErrorDetectedFlag ) RetValue |= (0x1 << 7);
-if (FrameRxUnexFinish ) RetValue |= (0x1 << 6);
-if (SkipByteFlag      ) RetValue |= (0x1 << 2);
-if (StartOfFrameFlag  ) RetValue |= (0x1 << 1);
-if (FrameRxDoneFlag   ) RetValue |= (0x1 << 0);
+if (ErrorDetectedFlag       ) RetValue |= (0x1 << 7);
+if (FrameRxUnexFinish       ) RetValue |= (0x1 << 6);
+if (SkipByteFlag            ) RetValue |= (0x1 << 2);
+if (StartOfFrameFlag        ) RetValue |= (0x1 << 1);
+if (FrameRxDoneFlag         ) RetValue |= (0x1 << 0);
 
+
+p->RxSize               =   RxSize;
+p->ErrorDetectedFlag    =   ErrorDetectedFlag;
+p->PreviousDataByte     =   PreviousDataByte;
 
 return RetValue;
 }

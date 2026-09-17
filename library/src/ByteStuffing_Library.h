@@ -29,16 +29,23 @@
 extern "C" {
 #endif
 
-
 #define BS_MAX_PACK_SIZE        8192
+
+typedef struct
+{
+unsigned short RxSize;
+unsigned char ErrorDetectedFlag;
+unsigned char PreviousDataByte;
+} ByteStuff_FSM_Str;
 
 #define BS_FRAME_DELIMITER          0x7E
 #define BS_ESCAPE_SYMBOL            0x7D
 #define BS_ESCAPE_MASK0             0x5E
 #define BS_ESCAPE_MASK1             0x5D
 
-unsigned char ByteStuffingDecoder(unsigned char *DataIn, unsigned char *DataOut);
+unsigned char ByteStuffingDecoder(unsigned char *DataIn, unsigned char *DataOut, ByteStuff_FSM_Str *p);
 unsigned char ByteStuffingEncoder(unsigned char *DataIn, unsigned char *DataOut_x2);
+void          ByteStuffingResetFSM(ByteStuff_FSM_Str *p);
 #ifdef __cplusplus
 }
 #endif
