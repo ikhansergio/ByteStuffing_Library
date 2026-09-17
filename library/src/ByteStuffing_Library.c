@@ -160,22 +160,51 @@ return RetValue;
 /*
 unsigned char ByteStuffingEncoder(unsigned char *DataIn, unsigned char *DataOut_x2)
 
-Example:
+Example1:	Blocking UART_Transmit 
+
 unsigned char TxDataArray [16];
 unsigned char DataOut_x2 [2];
 
+// Call Blocking UART_Transmit 
 UART_Transmit(FrameDelimiter, 1);       // Sending FrameDelimiter
+
 for(int i = 0; i<16; i++)
     {
     unsigned char SendSize = ByteStuffingEncoder(&TxDataArray[i], DataOut_x2);
     //SendSize value is equal to 1 or 2
+	
+	// Call Blocking UART_Transmit 
     UART_Transmit(DataOut_x2, SendSize);// Sending Encoded Data
     }
-
+	
+// Call Blocking UART_Transmit 
 UART_Transmit(FrameDelimiter, 1);       // Sending FrameDelimiter
 
-*/
 
+Example2:	Non-Blocking UART_Transmit 
+
+unsigned char TxDataArray [16];
+unsigned char TxDataArrayEncoded [16*2 +2];
+
+unsigned short TxBytesCount=0;
+
+TxDataArrayEncoded[TxBytesCount] = FrameDelimiter;		// Sending FrameDelimiter 
+TxBytesCount++;
+
+for(int i = 0; i<16; i++)
+    {
+    unsigned char SendSize = ByteStuffingEncoder(&TxDataArray[i], &TxDataArrayEncoded[TxBytesCount]);
+    //SendSize value is equal to 1 or 2
+	TxBytesCount += SendSize;
+    }
+	
+TxDataArrayEncoded[TxBytesCount] = FrameDelimiter;		// Sending FrameDelimiter
+TxBytesCount++;	
+
+// Call Non-Blocking UART_Transmit 
+UART_Transmit_IT(FrameDelimiter, TxBytesCount); 
+
+*/
 
 unsigned char ByteStuffingEncoder(unsigned char *DataIn, unsigned char *DataOut_x2)
 {
