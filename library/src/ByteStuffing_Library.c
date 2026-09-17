@@ -128,7 +128,6 @@ unsigned char ByteStuffingEncoder(unsigned char *DataIn, unsigned char *DataOut_
             Size++;
             DataOut_x2[Size]=EscapeMask0;
             Size++;
-            //HAL_UART_Transmit(&huart3, StaffArray, 2 , 1000);
             // If the data contains an EscapeSymbol, we perform a replacement.
             } else if (DataIn[0]==EscapeSymbol)
                 {
@@ -136,13 +135,11 @@ unsigned char ByteStuffingEncoder(unsigned char *DataIn, unsigned char *DataOut_
                 Size++;
                 DataOut_x2[Size]=EscapeMask1;
                 Size++;
-                //HAL_UART_Transmit(&huart3, StaffArray, 2 , 1000);
                 // Otherwise, the data remain unchanged.
                 } else
                     {
                     DataOut_x2[Size] = DataIn[0];
                     Size++;
-                    //HAL_UART_Transmit(&huart3, &p[i], 1 , 1000);
                     }
 return Size;
 }
