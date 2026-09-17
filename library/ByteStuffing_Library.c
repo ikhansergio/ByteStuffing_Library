@@ -22,9 +22,12 @@
 //SOFTWARE.
 ////////////////////////////////////////////////////////////////////////////////
 
-#define MAX_PackSize 8192
+
+#include "ByteStuffing_Library.h"
 
 /*
+unsigned char ByteStuffingDecoder(unsigned char *DataIn, unsigned char *DataOut)
+
 This function analyzes the data stream received from the UART to identify frame boundaries using the byte-stuffing algorithm.
 The function argument is the character received via UART.
 The function will return flags that can be used to interpret the symbol's position within the frame.
@@ -50,38 +53,38 @@ unsigned char StartOfFrameFlag 	=0;
 unsigned char FrameRxDoneFlag 	=0;
 
 
-if ((*DataIn==0x7E)) 
-	{ 
-	if (ErrorDetectedFlag == 0x0 )
-		{
-		// If there are no errors and at least one valid symbol has been received, 
-		// the reception of a FrameDelimiterSymbol indicates the completion of the previous frame's reception.
-		if (RxSize!=0) FrameRxDoneFlag =1; 
-		}		
-	RxSize = 0; 
-	SkipByteFlag =1; 
-	ErrorDetectedFlag =0; 
-	} 
-	else if ((*DataIn!=0x7E))
-		{		
-		if (ErrorDetectedFlag == 0x0 )
-			{
-			if ((*DataIn==0x7D)&&(PreviousDataByte==0x7D)) { SkipByteFlag =1; ErrorDetectedFlag =1;}
-				else if ((*DataIn==0x7D)&&(PreviousDataByte!=0x7D)) { SkipByteFlag =1; }
-					else if ((*DataIn==0x5E)&&(PreviousDataByte==0x7D)) { SkipByteFlag =0; RxSize++; *DataOut = 0x7E;}
-						else if ((*DataIn==0x5D)&&(PreviousDataByte==0x7D)) { SkipByteFlag =0;  RxSize++; *DataOut = 0x7D;} 
-							else if ((*DataIn!=0x5D)&&(*DataIn!=0x5E)&&(PreviousDataByte==0x7D)) { SkipByteFlag =1; ErrorDetectedFlag =1;}
-								else {SkipByteFlag =0; RxSize++; *DataOut = *DataIn; };
-			} else if (ErrorDetectedFlag != 0x0 )
-				{
-				SkipByteFlag =1; ErrorDetectedFlag =1;
-				}
-		}
+if (*DataIn==FrameDelimiter)
+    {
+    if (ErrorDetectedFlag == 0x0 )
+        {
+        // If there are no errors and at least one valid symbol has been received,
+        // the reception of a FrameDelimiterSymbol indicates the completion of the previous frame's reception.
+        if (RxSize!=0) FrameRxDoneFlag =1;
+        }
+    RxSize = 0;
+    SkipByteFlag =1;
+    ErrorDetectedFlag =0;
+    }
+    else if ((*DataIn!=FrameDelimiter))
+        {
+        if (ErrorDetectedFlag == 0x0 )
+            {
+            if ((*DataIn==EscapeSymbol)&&(PreviousDataByte==EscapeSymbol)) { SkipByteFlag =1; ErrorDetectedFlag =1;}
+                else if ((*DataIn==EscapeSymbol)&&(PreviousDataByte!=EscapeSymbol)) { SkipByteFlag =1; }
+                    else if ((*DataIn==EscapeMask0)&&(PreviousDataByte==EscapeSymbol)) { SkipByteFlag =0; RxSize++; *DataOut = FrameDelimiter;}
+                        else if ((*DataIn==EscapeMask1)&&(PreviousDataByte==EscapeSymbol)) { SkipByteFlag =0;  RxSize++; *DataOut = EscapeSymbol;}
+                            else if ((*DataIn!=EscapeMask1)&&(*DataIn!=EscapeMask0)&&(PreviousDataByte==EscapeSymbol)) { SkipByteFlag =1; ErrorDetectedFlag =1;}
+                                else {SkipByteFlag =0; RxSize++; *DataOut = *DataIn; };
+            } else if (ErrorDetectedFlag != 0x0 )
+                {
+                SkipByteFlag =1; ErrorDetectedFlag =1;
+                }
+        }
 
 if ((RxSize ==1)&&(SkipByteFlag==0)) {StartOfFrameFlag =1;} else {StartOfFrameFlag =0;}
 
 if  (RxSize > MAX_PackSize ) ErrorDetectedFlag =1;
-PreviousDataByte = *DataIn;	
+PreviousDataByte = *DataIn;
 
 unsigned int RetValue =0;
 
@@ -90,7 +93,56 @@ if (SkipByteFlag      ) RetValue |= (0x1 << 2);
 if (StartOfFrameFlag  ) RetValue |= (0x1 << 1);
 if (FrameRxDoneFlag   ) RetValue |= (0x1 << 0);
 
-FrameRxDoneFlag =0;	
 
 return RetValue;
+}
+
+
+/*
+unsigned char ByteStuffingEncoder(unsigned char *DataIn, unsigned char *DataOut_x2)
+
+Example:
+unsigned char TxDataArray [16];
+unsigned char DataOut_x2 [2];
+
+UART_Transmit(FrameDelimiter, 1);       // Sending FrameDelimiter
+for(int i = 0; i<16; i++)
+    {
+    unsigned char SendSize = ByteStuffingEncoder(&TxDataArray[i], DataOut_x2);
+    //SendSize value is equal to 1 or 2
+    UART_Transmit(DataOut_x2, SendSize);// Sending Encoded Data
+    }
+
+UART_Transmit(FrameDelimiter, 1);       // Sending FrameDelimiter
+
+*/
+
+
+unsigned char ByteStuffingEncoder(unsigned char *DataIn, unsigned char *DataOut_x2)
+{
+    unsigned char Size=0;
+    //If the data contains a FrameDelimiterSymbol, we perform a replacement.
+    if (DataIn[0]==FrameDelimiter)
+        {
+            DataOut_x2[Size]=EscapeSymbol;
+            Size++;
+            DataOut_x2[Size]=EscapeMask0;
+            Size++;
+            //HAL_UART_Transmit(&huart3, StaffArray, 2 , 1000);
+            // If the data contains an EscapeSymbol, we perform a replacement.
+            } else if (DataIn[0]==EscapeSymbol)
+                {
+                DataOut_x2[Size]=EscapeSymbol;
+                Size++;
+                DataOut_x2[Size]=EscapeMask1;
+                Size++;
+                //HAL_UART_Transmit(&huart3, StaffArray, 2 , 1000);
+                // Otherwise, the data remain unchanged.
+                } else
+                    {
+                    DataOut_x2[Size] = DataIn[0];
+                    Size++;
+                    //HAL_UART_Transmit(&huart3, &p[i], 1 , 1000);
+                    }
+return Size;
 }
