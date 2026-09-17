@@ -53,27 +53,27 @@ unsigned char StartOfFrameFlag 	=0;
 unsigned char FrameRxDoneFlag 	=0;
 
 
-if (*DataIn==FrameDelimiter)
+if (*DataIn==BS_FRAME_DELIMITER)
     {
     if (ErrorDetectedFlag == 0x0 )
         {
         // If there are no errors and at least one valid symbol has been received,
         // the reception of a FrameDelimiterSymbol indicates the completion of the previous frame's reception.
-        if (RxSize!=0) FrameRxDoneFlag =1;
+        if ((RxSize!=0)&&(SkipByteFlag ==0)) FrameRxDoneFlag =1;
         }
     RxSize = 0;
     SkipByteFlag =1;
     ErrorDetectedFlag =0;
     }
-    else if ((*DataIn!=FrameDelimiter))
+    else if ((*DataIn!=BS_FRAME_DELIMITER))
         {
         if (ErrorDetectedFlag == 0x0 )
             {
-            if ((*DataIn==EscapeSymbol)&&(PreviousDataByte==EscapeSymbol)) { SkipByteFlag =1; ErrorDetectedFlag =1;}
-                else if ((*DataIn==EscapeSymbol)&&(PreviousDataByte!=EscapeSymbol)) { SkipByteFlag =1; }
-                    else if ((*DataIn==EscapeMask0)&&(PreviousDataByte==EscapeSymbol)) { SkipByteFlag =0; RxSize++; *DataOut = FrameDelimiter;}
-                        else if ((*DataIn==EscapeMask1)&&(PreviousDataByte==EscapeSymbol)) { SkipByteFlag =0;  RxSize++; *DataOut = EscapeSymbol;}
-                            else if ((*DataIn!=EscapeMask1)&&(*DataIn!=EscapeMask0)&&(PreviousDataByte==EscapeSymbol)) { SkipByteFlag =1; ErrorDetectedFlag =1;}
+            if ((*DataIn==BS_ESCAPE_SYMBOL)&&(PreviousDataByte==BS_ESCAPE_SYMBOL)) { SkipByteFlag =1; ErrorDetectedFlag =1;}
+                else if ((*DataIn==BS_ESCAPE_SYMBOL)&&(PreviousDataByte!=BS_ESCAPE_SYMBOL)) { SkipByteFlag =1; }
+                    else if ((*DataIn==BS_ESCAPE_MASK0)&&(PreviousDataByte==BS_ESCAPE_SYMBOL)) { SkipByteFlag =0; RxSize++; *DataOut = BS_FRAME_DELIMITER;}
+                        else if ((*DataIn==BS_ESCAPE_MASK1)&&(PreviousDataByte==BS_ESCAPE_SYMBOL)) { SkipByteFlag =0;  RxSize++; *DataOut = BS_ESCAPE_SYMBOL;}
+                            else if ((*DataIn!=BS_ESCAPE_MASK1)&&(*DataIn!=BS_ESCAPE_MASK0)&&(PreviousDataByte==BS_ESCAPE_SYMBOL)) { SkipByteFlag =1; ErrorDetectedFlag =1;}
                                 else {SkipByteFlag =0; RxSize++; *DataOut = *DataIn; };
             } else if (ErrorDetectedFlag != 0x0 )
                 {
@@ -83,7 +83,7 @@ if (*DataIn==FrameDelimiter)
 
 if ((RxSize ==1)&&(SkipByteFlag==0)) {StartOfFrameFlag =1;} else {StartOfFrameFlag =0;}
 
-if  (RxSize > MAX_PackSize ) ErrorDetectedFlag =1;
+if  (RxSize > BS_MAX_PACK_SIZE ) ErrorDetectedFlag =1;
 PreviousDataByte = *DataIn;
 
 unsigned int RetValue =0;
@@ -122,18 +122,18 @@ unsigned char ByteStuffingEncoder(unsigned char *DataIn, unsigned char *DataOut_
 {
     unsigned char Size=0;
     //If the data contains a FrameDelimiterSymbol, we perform a replacement.
-    if (DataIn[0]==FrameDelimiter)
+    if (DataIn[0]==BS_FRAME_DELIMITER)
         {
-            DataOut_x2[Size]=EscapeSymbol;
+            DataOut_x2[Size]=BS_ESCAPE_SYMBOL;
             Size++;
-            DataOut_x2[Size]=EscapeMask0;
+            DataOut_x2[Size]=BS_ESCAPE_MASK0;
             Size++;
             // If the data contains an EscapeSymbol, we perform a replacement.
-            } else if (DataIn[0]==EscapeSymbol)
+            } else if (DataIn[0]==BS_ESCAPE_SYMBOL)
                 {
-                DataOut_x2[Size]=EscapeSymbol;
+                DataOut_x2[Size]=BS_ESCAPE_SYMBOL;
                 Size++;
-                DataOut_x2[Size]=EscapeMask1;
+                DataOut_x2[Size]=BS_ESCAPE_MASK1;
                 Size++;
                 // Otherwise, the data remain unchanged.
                 } else

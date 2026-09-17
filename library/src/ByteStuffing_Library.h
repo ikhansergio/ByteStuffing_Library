@@ -30,12 +30,12 @@ extern "C" {
 #endif
 
 
-#define MAX_PackSize 8192
+#define BS_MAX_PACK_SIZE        8192
 
-#define FrameDelimiter          0x7E
-#define EscapeSymbol            0x7D
-#define EscapeMask0             0x5E
-#define EscapeMask1             0x5D
+#define BS_FRAME_DELIMITER          0x7E
+#define BS_ESCAPE_SYMBOL            0x7D
+#define BS_ESCAPE_MASK0             0x5E
+#define BS_ESCAPE_MASK1             0x5D
 
 unsigned char ByteStuffingDecoder(unsigned char *DataIn, unsigned char *DataOut);
 unsigned char ByteStuffingEncoder(unsigned char *DataIn, unsigned char *DataOut_x2);
