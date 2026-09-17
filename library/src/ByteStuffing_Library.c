@@ -35,7 +35,7 @@ The function will return flags that can be used to interpret the symbol's positi
 return value  - unsigned char ( 8 bit )
 
 bit 7   . ErrorDetectedFlag	- If the flag is set, the data is invalid and synchronization is broken.
-bit 6   . ErrorDetectedFlag	- If the flag is set, it means the frame reception completed unexpectedly.
+bit 6   . FrameRxUnexFinish	- If the flag is set, it means the frame reception completed unexpectedly.
 bit 4-3 . No information.
 bit 2   . SkipByteFlag 		- This is a service byte, it must be skipped.
 bit 1   . StartOfFrameFlag  - This byte is the first in the frame.
@@ -62,6 +62,9 @@ Examples :
 
 0x7E DATA DATA 0x7D 0x7E 		-> 0x7D 0x7E - Error sequence
 0x7E DATA 0x7D 0x7D 0x7E 		-> 0x7D 0x7D - Error sequence
+0x7E 0x7D 0x7D DATA 0x7E 		-> 0x7D 0x7D - Error sequence
+0x7E DATA 0x7D 0x7D DATA 0x7E 	-> 0x7D 0x7D - Error sequence
+0x7E 0x7D 0x7D DATA DATA 0x7E 	-> 0x7D 0x7D - Error sequence
 
 */
 
@@ -75,7 +78,7 @@ static unsigned char 	PreviousDataByte   	=0;
 unsigned char SkipByteFlag 		=0;
 unsigned char StartOfFrameFlag 	=0;
 unsigned char FrameRxDoneFlag 	=0;
-unsigned char FrameRxErrFinish 	=0;
+unsigned char FrameRxUnexFinish =0;
 
 
 if (*DataIn==BS_FRAME_DELIMITER)
@@ -84,8 +87,8 @@ if (*DataIn==BS_FRAME_DELIMITER)
         {
         // If there are no errors and at least one valid symbol has been received,
         // the reception of a FrameDelimiterSymbol indicates the completion of the previous frame's reception.
-        if ((RxSize!=0)&&(SkipByteFlag ==0)) {FrameRxDoneFlag =1; FrameRxErrFinish =0;}
-            else if ((RxSize!=0)&&(SkipByteFlag ==0)) {FrameRxDoneFlag =1; FrameRxErrFinish =1;}
+        if ((RxSize!=0)&&(SkipByteFlag ==0)) {FrameRxDoneFlag =1; FrameRxUnexFinish =0;}
+            else if ((RxSize!=0)&&(SkipByteFlag ==0)) {FrameRxDoneFlag =1; FrameRxUnexFinish =1;}
         }
     RxSize = 0;
     SkipByteFlag =1;
@@ -115,7 +118,7 @@ PreviousDataByte = *DataIn;
 unsigned int RetValue =0;
 
 if (ErrorDetectedFlag ) RetValue |= (0x1 << 7);
-if (FrameRxErrFinish  ) RetValue |= (0x1 << 6);
+if (FrameRxUnexFinish ) RetValue |= (0x1 << 6);
 if (SkipByteFlag      ) RetValue |= (0x1 << 2);
 if (StartOfFrameFlag  ) RetValue |= (0x1 << 1);
 if (FrameRxDoneFlag   ) RetValue |= (0x1 << 0);
