@@ -202,7 +202,7 @@ TxDataArrayEncoded[TxBytesCount] = FrameDelimiter;		// Sending FrameDelimiter
 TxBytesCount++;	
 
 // Call Non-Blocking UART_Transmit 
-UART_Transmit_IT(FrameDelimiter, TxBytesCount); 
+UART_Transmit_IT(TxDataArrayEncoded, TxBytesCount); 
 
 */
 
