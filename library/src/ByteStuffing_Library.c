@@ -113,7 +113,7 @@ if (*DataIn==BS_FRAME_DELIMITER)
         // If there are no errors and at least one valid symbol has been received,
         // the reception of a FrameDelimiterSymbol indicates the completion of the previous frame's reception.
         if ((RxSize!=0)&&(SkipByteFlag ==0)) {FrameRxDoneFlag =1; FrameRxUnexFinish =0;}
-            else if ((RxSize!=0)&&(SkipByteFlag ==0)) {FrameRxDoneFlag =1; FrameRxUnexFinish =1;}
+            else if ((RxSize!=0)&&(SkipByteFlag ==1)) {FrameRxDoneFlag =1; FrameRxUnexFinish =1;}
         }
     RxSize = 0;
     SkipByteFlag =1;
