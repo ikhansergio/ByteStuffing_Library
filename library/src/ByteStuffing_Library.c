@@ -142,7 +142,7 @@ PreviousDataByte = *DataIn;
 
 unsigned char RetValue =0;
 
-// Set Error flag
+//Error flag is ErrorDetectedFlag or FrameRxUnexFinish condition.
 if (ErrorDetectedFlag       ) RetValue |= (0x1 << 7);
 if (FrameRxUnexFinish       ) RetValue |= (0x1 << 7);
 
