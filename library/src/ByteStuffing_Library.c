@@ -140,7 +140,7 @@ if ((RxSize ==1)&&(SkipByteFlag==0)) {StartOfFrameFlag =1;} else {StartOfFrameFl
 if  (RxSize > BS_MAX_PACK_SIZE ) ErrorDetectedFlag =1;
 PreviousDataByte = *DataIn;
 
-unsigned int RetValue =0;
+unsigned char RetValue =0;
 
 if (ErrorDetectedFlag       ) RetValue |= (0x1 << 7);
 if (FrameRxUnexFinish       ) RetValue |= (0x1 << 6);
