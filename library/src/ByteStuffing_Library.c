@@ -142,8 +142,12 @@ PreviousDataByte = *DataIn;
 
 unsigned char RetValue =0;
 
+// Set Error flag
 if (ErrorDetectedFlag       ) RetValue |= (0x1 << 7);
+if (FrameRxUnexFinish       ) RetValue |= (0x1 << 7);
+
 if (FrameRxUnexFinish       ) RetValue |= (0x1 << 6);
+
 if (SkipByteFlag            ) RetValue |= (0x1 << 2);
 if (StartOfFrameFlag        ) RetValue |= (0x1 << 1);
 if (FrameRxDoneFlag         ) RetValue |= (0x1 << 0);
