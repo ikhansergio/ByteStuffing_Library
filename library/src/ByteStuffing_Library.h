@@ -29,7 +29,9 @@
 extern "C" {
 #endif
 
+#ifndef BS_MAX_PACK_SIZE
 #define BS_MAX_PACK_SIZE        8192
+#endif
 
 typedef struct
 {
